@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section}, '수집된 뉴스')}">
+<section>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-newspaper me-2"></i>수집된 뉴스
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                    <i class="fas fa-filter me-1"></i>필터
+                </button>
+                <a href="/news/statistics" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-bar me-1"></i>통계
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필터 섹션 -->
+    <div class="collapse mb-4" id="filterCollapse">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" action="/news">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="keyword" class="form-label">키워드</label>
+                            <input type="text" class="form-control" id="keyword" name="keyword"
+                                   th:value="${currentKeyword}" placeholder="키워드 입력">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sourceType" class="form-label">뉴스 소스</label>
+                            <select class="form-select" id="sourceType" name="sourceType">
+                                <option value="">전체</option>
+                                <option th:each="source : ${sourceTypes}"
+                                        th:value="${source}"
+                                        th:text="${source.displayName}"
+                                        th:selected="${source == currentSourceType}">소스</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="startDate" class="form-label">시작일</label>
+                            <input type="datetime-local" class="form-control" id="startDate" name="startDate"
+                                   th:value="${currentStartDate}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="endDate" class="form-label">종료일</label>
+                            <input type="datetime-local" class="form-control" id="endDate" name="endDate"
+                                   th:value="${currentEndDate}">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>검색
+                            </button>
+                            <a href="/news" class="btn btn-secondary ms-2">
+                                <i class="fas fa-refresh me-1"></i>초기화
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 통계 요약 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-primary" th:text="${statistics.totalCount}">0</h5>
+                    <p class="card-text">전체 뉴스</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">키워드별 수집 현황</h6>
+                    <div class="d-flex flex-wrap">
+                        <span th:each="entry : ${statistics.keywordCounts}" class="keyword-badge me-2 mb-2">
+                            <span th:text="${entry.key}">키워드</span>
+                            (<span th:text="${entry.value}">0</span>)
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 뉴스 목록 -->
+    <div class="row">
+        <div class="col-12">
+            <div th:if="${newsPage.content.size() == 0}" class="text-center py-5">
+                <i class="fas fa-newspaper fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">수집된 뉴스가 없습니다</h4>
+                <p class="text-muted">키워드를 등록하여 뉴스 수집을 시작해보세요.</p>
+                <a href="/settings" class="btn btn-primary">키워드 등록하기</a>
+            </div>
+
+            <div th:each="article : ${newsPage.content}" class="card news-card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="card-title">
+                                <a th:href="@{/news/detail(id=${article.id})}"
+                                   th:text="${article.title}"
+                                   class="text-decoration-none">뉴스 제목</a>
+                            </h5>
+                            <p class="card-text text-muted" th:text="${#strings.abbreviate(article.content, 200)}">
+                                뉴스 내용 요약...
+                            </p>
+                            <div class="d-flex align-items-center">
+                                <span class="keyword-badge me-2" th:text="${article.keyword}">키워드</span>
+                                <span class="source-badge me-2" th:text="${article.sourceType.displayName}">소스</span>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    <span th:text="${#temporals.format(article.collectedAt, 'yyyy-MM-dd HH:mm')}">수집시간</span>
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="btn-group-vertical" role="group">
+                                <a th:href="@{/news/detail(id=${article.id})}" class="btn btn-outline-primary btn-sm mb-2">
+                                    <i class="fas fa-eye me-1"></i>상세보기
+                                </a>
+                                <a th:href="${article.newsUrl}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>원문보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <nav th:if="${newsPage.totalPages > 1}">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${newsPage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/news(page=${newsPage.number - 1}, keyword=${currentKeyword}, sourceType=${currentSourceType}, startDate=${currentStartDate}, endDate=${currentEndDate})}">이전</a>
+            </li>
+
+            <li th:each="pageNum : ${#numbers.sequence(0, newsPage.totalPages - 1)}"
+                th:if="${pageNum >= newsPage.number - 2 and pageNum <= newsPage.number + 2}"
+                class="page-item"
+                th:classappend="${pageNum == newsPage.number} ? 'active'">
+                <a class="page-link"
+                   th:href="@{/news(page=${pageNum}, keyword=${currentKeyword}, sourceType=${currentSourceType}, startDate=${currentStartDate}, endDate=${currentEndDate})}"
+                   th:text="${pageNum + 1}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${newsPage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/news(page=${newsPage.number + 1}, keyword=${currentKeyword}, sourceType=${currentSourceType}, startDate=${currentStartDate}, endDate=${currentEndDate})}">다음</a>
+            </li>
+        </ul>
+    </nav>
+</section>
+</html>

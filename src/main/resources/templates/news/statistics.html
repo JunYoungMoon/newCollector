@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section}, '뉴스 수집 통계')}">
+<section>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-chart-bar me-2"></i>뉴스 수집 통계
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="/news" class="btn btn-outline-primary">
+                    <i class="fas fa-newspaper me-1"></i>뉴스 목록
+                </a>
+                <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i>인쇄
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 통계 요약 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <i class="fas fa-newspaper fa-2x mb-2"></i>
+                    <h4 class="card-title" th:text="${statistics.totalCount}">0</h4>
+                    <p class="card-text">전체 수집 뉴스</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <i class="fas fa-tags fa-2x mb-2"></i>
+                    <h4 class="card-title" th:text="${#maps.size(statistics.keywordCounts)}">0</h4>
+                    <p class="card-text">등록된 키워드</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <i class="fas fa-rss fa-2x mb-2"></i>
+                    <h4 class="card-title" th:text="${#maps.size(statistics.sourceCounts)}">0</h4>
+                    <p class="card-text">활성 뉴스 소스</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-warning text-white">
+                <div class="card-body">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4 class="card-title">24H</h4>
+                    <p class="card-text">수집 주기 (시간)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 차트 섹션 -->
+    <div class="row mb-4">
+        <!-- 키워드별 수집 통계 -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>키워드별 수집 현황
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="keywordChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 뉴스 소스별 수집 통계 -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rss me-2"></i>뉴스 소스별 수집 현황
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sourceChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 통계 테이블 -->
+    <div class="row">
+        <!-- 키워드별 상세 통계 -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>키워드별 상세 통계
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#maps.isEmpty(statistics.keywordCounts)}" class="text-center text-muted py-3">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p>등록된 키워드가 없습니다.</p>
+                    </div>
+
+                    <div th:unless="${#maps.isEmpty(statistics.keywordCounts)}">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>키워드</th>
+                                    <th class="text-end">수집 건수</th>
+                                    <th class="text-end">비율</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="entry : ${statistics.keywordCounts}">
+                                    <td>
+                                        <a th:href="@{/news(keyword=${entry.key})}"
+                                           class="text-decoration-none">
+                                            <span class="keyword-badge" th:text="${entry.key}">키워드</span>
+                                        </a>
+                                    </td>
+                                    <td class="text-end" th:text="${entry.value}">0</td>
+                                    <td class="text-end">
+                                        <span th:text="${#numbers.formatPercent(entry.value / statistics.totalCount, 1, 1)}">0%</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 뉴스 소스별 상세 통계 -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>뉴스 소스별 상세 통계
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div th:if="${#maps.isEmpty(statistics.sourceCounts)}" class="text-center text-muted py-3">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p>등록된 뉴스 소스가 없습니다.</p>
+                    </div>
+
+                    <div th:unless="${#maps.isEmpty(statistics.sourceCounts)}">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>뉴스 소스</th>
+                                    <th class="text-end">수집 건수</th>
+                                    <th class="text-end">비율</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="entry : ${statistics.sourceCounts}">
+                                    <td>
+                                        <span class="source-badge" th:text="${entry.key}">소스</span>
+                                    </td>
+                                    <td class="text-end" th:text="${entry.value}">0</td>
+                                    <td class="text-end">
+                                        <span th:text="${#numbers.formatPercent(entry.value / statistics.totalCount, 1, 1)}">0%</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 차트 스크립트 -->
+    <script th:inline="javascript">
+        // 키워드 데이터
+        const keywordData = /*[[${statistics.keywordCounts}]]*/ {};
+        const keywordLabels = Object.keys(keywordData);
+        const keywordValues = Object.values(keywordData);
+
+        // 뉴스 소스 데이터
+        const sourceData = /*[[${statistics.sourceCounts}]]*/ {};
+        const sourceLabels = Object.keys(sourceData);
+        const sourceValues = Object.values(sourceData);
+
+        // 키워드 차트
+        if (keywordLabels.length > 0) {
+            const keywordCtx = document.getElementById('keywordChart').getContext('2d');
+            new Chart(keywordCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: keywordLabels,
+                    datasets: [{
+                        data: keywordValues,
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40',
+                            '#FF6384',
+                            '#C9CBCF'
+                        ],
+                        hoverBackgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF',
+                            '#FF9F40',
+                            '#FF6384',
+                            '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value}건 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('keywordChart').style.display = 'none';
+            document.querySelector('#keywordChart').parentElement.innerHTML =
+                '<div class="text-center text-muted py-5"><i class="fas fa-chart-pie fa-3x mb-3"></i><p>표시할 데이터가 없습니다.</p></div>';
+        }
+
+        // 뉴스 소스 차트
+        if (sourceLabels.length > 0) {
+            const sourceCtx = document.getElementById('sourceChart').getContext('2d');
+            new Chart(sourceCtx, {
+                type: 'bar',
+                data: {
+                    labels: sourceLabels,
+                    datasets: [{
+                        label: '수집 건수',
+                        data: sourceValues,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.parsed.y}건`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('sourceChart').style.display = 'none';
+            document.querySelector('#sourceChart').parentElement.innerHTML =
+                '<div class="text-center text-muted py-5"><i class="fas fa-chart-bar fa-3x mb-3"></i><p>표시할 데이터가 없습니다.</p></div>';
+        }
+    </script>
+</section>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section}, '대시보드')}">
+<section>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-tachometer-alt me-2"></i>대시보드
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="/news" class="btn btn-outline-primary">
+                    <i class="fas fa-newspaper me-1"></i>뉴스 보기
+                </a>
+                <a href="/settings" class="btn btn-outline-secondary">
+                    <i class="fas fa-cog me-1"></i>설정
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 환영 메시지 -->
+        <div class="col-12 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-user-circle me-2"></i>
+                        환영합니다, <span th:text="${user?.username ?: '사용자'}">사용자</span>님!
+                    </h5>
+                    <p class="card-text">뉴스 수집 서비스에 오신 것을 환영합니다. 관심 있는 키워드를 등록하고 최신 뉴스를 자동으로 수집해보세요.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 빠른 액션 카드들 -->
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-plus-circle fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">키워드 추가</h5>
+                    <p class="card-text">새로운 키워드를 등록하여 관련 뉴스를 수집하세요.</p>
+                    <a href="/settings" class="btn btn-success">키워드 관리</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-rss fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">뉴스 소스 설정</h5>
+                    <p class="card-text">수집할 뉴스 사이트를 선택하고 관리하세요.</p>
+                    <a href="/settings" class="btn btn-info">소스 관리</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-newspaper fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">수집된 뉴스</h5>
+                    <p class="card-text">수집된 뉴스 기사들을 확인하고 읽어보세요.</p>
+                    <a href="/news" class="btn btn-primary">뉴스 보기</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <i class="fas fa-chart-bar fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">통계</h5>
+                    <p class="card-text">수집된 뉴스의 통계와 분석 결과를 확인하세요.</p>
+                    <a href="/news/statistics" class="btn btn-warning">통계 보기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용법 안내 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>사용법 안내
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-step-forward me-2"></i>시작하기</h6>
+                            <ol>
+                                <li>설정 페이지에서 관심 있는 키워드를 등록하세요</li>
+                                <li>뉴스를 수집할 사이트를 선택하세요</li>
+                                <li>키워드 등록 시 즉시 뉴스 수집이 시작됩니다</li>
+                                <li>이후 매시간 정각에 자동으로 뉴스를 수집합니다</li>
+                            </ol>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-lightbulb me-2"></i>유용한 팁</h6>
+                            <ul>
+                                <li>키워드는 구체적으로 입력할수록 정확한 결과를 얻을 수 있습니다</li>
+                                <li>여러 뉴스 소스를 선택하면 더 다양한 뉴스를 수집할 수 있습니다</li>
+                                <li>불필요한 키워드나 소스는 비활성화할 수 있습니다</li>
+                                <li>통계 페이지에서 수집 현황을 한눈에 확인할 수 있습니다</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</html>

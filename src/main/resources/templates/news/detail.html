@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section}, '뉴스 상세보기')}">
+<section>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-newspaper me-2"></i>뉴스 상세보기
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="/news" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>목록으로
+                </a>
+                <a th:href="${article.newsUrl}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>원문보기
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <!-- 기사 헤더 -->
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="keyword-badge me-2" th:text="${article.keyword}">키워드</span>
+                                <span class="source-badge me-2" th:text="${article.sourceType.displayName}">소스</span>
+                            </div>
+                            <h1 class="h4 mb-0" th:text="${article.title}">뉴스 제목</h1>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="text-muted">
+                                <div>
+                                    <i class="fas fa-calendar me-1"></i>
+                                    수집일: <span th:text="${#temporals.format(article.collectedAt, 'yyyy년 MM월 dd일 HH:mm')}">수집일</span>
+                                </div>
+                                <div th:if="${article.publishedAt}">
+                                    <i class="fas fa-clock me-1"></i>
+                                    발행일: <span th:text="${#temporals.format(article.publishedAt, 'yyyy년 MM월 dd일 HH:mm')}">발행일</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기사 본문 -->
+                <div class="card-body">
+                    <!-- 이미지가 있는 경우 -->
+                    <div th:if="${article.imageUrl}" class="text-center mb-4">
+                        <img th:src="${article.imageUrl}"
+                             th:alt="${article.title}"
+                             class="img-fluid rounded"
+                             style="max-height: 400px; object-fit: cover;">
+                    </div>
+
+                    <!-- 본문 내용 -->
+                    <div class="article-content">
+                        <div th:if="${article.content and !#strings.isEmpty(article.content)}"
+                             class="lead text-justify"
+                             style="line-height: 1.8; font-size: 1.1em;">
+                            <p th:text="${article.content}">기사 내용</p>
+                        </div>
+                        <div th:unless="${article.content and !#strings.isEmpty(article.content)}"
+                             class="text-muted text-center py-4">
+                            <i class="fas fa-info-circle fa-2x mb-3"></i>
+                            <p>기사 내용이 수집되지 않았습니다. 원문을 확인해주세요.</p>
+                            <a th:href="${article.newsUrl}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>원문보기
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기사 푸터 -->
+                <div class="card-footer">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-link me-2 text-muted"></i>
+                                <a th:href="${article.newsUrl}"
+                                   target="_blank"
+                                   class="text-truncate text-decoration-none"
+                                   style="max-width: 300px;">
+                                    <span th:text="${article.newsUrl}">기사 URL</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <div class="btn-group">
+                                <a href="/news" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-list me-1"></i>목록
+                                </a>
+                                <a th:href="@{/news(keyword=${article.keyword})}" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-search me-1"></i>같은 키워드
+                                </a>
+                                <a th:href="@{/news(sourceType=${article.sourceType})}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fas fa-rss me-1"></i>같은 소스
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 관련 정보 -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>수집 정보
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <td class="text-muted" style="width: 100px;">키워드</td>
+                            <td>
+                                <span class="keyword-badge" th:text="${article.keyword}">키워드</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">뉴스 소스</td>
+                            <td>
+                                <span class="source-badge" th:text="${article.sourceType.displayName}">소스</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">수집일시</td>
+                            <td th:text="${#temporals.format(article.collectedAt, 'yyyy-MM-dd HH:mm:ss')}">수집일시</td>
+                        </tr>
+                        <tr th:if="${article.publishedAt}">
+                            <td class="text-muted">발행일시</td>
+                            <td th:text="${#temporals.format(article.publishedAt, 'yyyy-MM-dd HH:mm:ss')}">발행일시</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-share-alt me-2"></i>공유하기
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="copyToClipboard()">
+                            <i class="fas fa-copy me-1"></i>링크 복사
+                        </button>
+                        <a th:href="'mailto:?subject=' + ${article.title} + '&body=' + ${article.newsUrl}"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-envelope me-1"></i>이메일로 공유
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(function() {
+                // Bootstrap 토스트 알림
+                const toastHtml = `
+                    <div class="toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-3"
+                         role="alert" style="z-index: 9999;">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas fa-check me-2"></i>링크가 클립보드에 복사되었습니다.
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                                    data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', toastHtml);
+                const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
+                toast.show();
+
+                // 토스트가 사라진 후 DOM에서 제거
+                setTimeout(() => {
+                    const toastElement = document.querySelector('.toast:last-child');
+                    if (toastElement) {
+                        toastElement.remove();
+                    }
+                }, 5000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('링크 복사에 실패했습니다.');
+            });
+        }
+    </script>
+</section>
+</html>

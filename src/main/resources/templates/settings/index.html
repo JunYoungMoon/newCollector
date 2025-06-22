@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section}, '설정')}">
+<section>
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+            <i class="fas fa-cog me-2"></i>설정
+        </h1>
+    </div>
+
+    <div class="row">
+        <!-- 키워드 관리 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>수집 키워드 관리
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- 키워드 추가 폼 -->
+                    <form th:action="@{/settings/keywords}" method="post" class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="keyword"
+                                   placeholder="새 키워드 입력 (예: 선거, 코로나)" required>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>추가
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">키워드 등록 시 즉시 뉴스 수집이 시작됩니다.</small>
+                    </form>
+
+                    <!-- 등록된 키워드 목록 -->
+                    <div th:if="${userKeywords.size() == 0}" class="text-center text-muted py-3">
+                        <i class="fas fa-info-circle me-2"></i>등록된 키워드가 없습니다.
+                    </div>
+
+                    <div th:each="keyword : ${userKeywords}" class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div class="flex-grow-1">
+                            <span th:text="${keyword.keyword}"
+                                  th:classappend="${!keyword.isActive} ? 'text-muted text-decoration-line-through' : ''"
+                                  class="fw-bold">키워드</span>
+                            <div class="small text-muted">
+                                생성: <span th:text="${#temporals.format(keyword.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                                <span th:if="${keyword.lastCollectedAt}">
+                                    | 마지막 수집: <span th:text="${#temporals.format(keyword.lastCollectedAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <form th:action="@{/settings/keywords/{id}/toggle(id=${keyword.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-secondary"
+                                        th:classappend="${keyword.isActive} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                        th:title="${keyword.isActive} ? '비활성화' : '활성화'">
+                                    <i th:class="${keyword.isActive} ? 'fas fa-pause' : 'fas fa-play'"></i>
+                                </button>
+                            </form>
+                            <form th:action="@{/settings/keywords/{id}/delete(id=${keyword.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger"
+                                        onclick="return confirm('정말 삭제하시겠습니까?')" title="삭제">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 뉴스 소스 관리 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-rss me-2"></i>뉴스 소스 관리
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- 뉴스 소스 추가 폼 -->
+                    <form th:action="@{/settings/sources}" method="post" class="mb-3">
+                        <div class="input-group">
+                            <select class="form-select" name="sourceType" required>
+                                <option value="">뉴스 소스 선택</option>
+                                <option th:each="sourceType : ${availableSourceTypes}"
+                                        th:value="${sourceType}"
+                                        th:text="${sourceType.displayName}"
+                                        th:disabled="${#lists.contains(userNewsSources, sourceType)}">소스</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>추가
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- 등록된 뉴스 소스 목록 -->
+                    <div th:if="${userNewsSources.size() == 0}" class="text-center text-muted py-3">
+                        <i class="fas fa-info-circle me-2"></i>등록된 뉴스 소스가 없습니다.
+                    </div>
+
+                    <div th:each="source : ${userNewsSources}" class="d-flex justify-content-between align-items-center border-bottom py-2">
+                        <div class="flex-grow-1">
+                            <span th:text="${source.sourceType.displayName}"
+                                  th:classappend="${!source.isActive} ? 'text-muted text-decoration-line-through' : ''"
+                                  class="fw-bold">뉴스 소스</span>
+                            <div class="small text-muted">
+                                생성: <span th:text="${#temporals.format(source.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span>
+                            </div>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <form th:action="@{/settings/sources/{id}/toggle(id=${source.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-secondary"
+                                        th:classappend="${source.isActive} ? 'btn-outline-warning' : 'btn-outline-success'"
+                                        th:title="${source.isActive} ? '비활성화' : '활성화'">
+                                    <i th:class="${source.isActive} ? 'fas fa-pause' : 'fas fa-play'"></i>
+                                </button>
+                            </form>
+                            <form th:action="@{/settings/sources/{id}/delete(id=${source.id})}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger"
+                                        onclick="return confirm('정말 삭제하시겠습니까?')" title="삭제">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 수집 설정 정보 -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>수집 설정 정보
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-clock me-2"></i>수집 주기</h6>
+                            <p class="text-muted">매시간 정각에 자동으로 뉴스를 수집합니다.</p>
+
+                            <h6><i class="fas fa-bolt me-2"></i>즉시 수집</h6>
+                            <p class="text-muted">새로운 키워드를 등록하면 즉시 뉴스 수집이 시작됩니다.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-shield-alt me-2"></i>개인정보 보호</h6>
+                            <p class="text-muted">수집된 뉴스는 사용자별로 분리되어 저장되며, 다른 사용자가 접근할 수 없습니다.</p>
+
+                            <h6><i class="fas fa-database me-2"></i>데이터 관리</h6>
+                            <p class="text-muted">중복된 뉴스는 자동으로 필터링되어 저장되지 않습니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</html>
