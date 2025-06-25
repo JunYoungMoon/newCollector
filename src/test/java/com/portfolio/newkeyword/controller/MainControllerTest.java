@@ -6,95 +6,60 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
+@SpringBootTest
 @DisplayName("MainController 테스트")
 class MainControllerTest {
 
-    @Mock
-    private UserService userService;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
 
-    @InjectMocks
-    private MainController mainController;
+    @Autowired
+    private UserService userService;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(mainController)
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
                 .build();
     }
 
     @TestConfiguration
     @EnableWebSecurity
     static class TestConfig {
-
         @Bean
         @Primary
         public UserService userService() {
             return mock(UserService.class);
         }
-
-        @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-            http
-                    .csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/", "/login", "/register").permitAll()
-                            .requestMatchers("/dashboard").authenticated()
-                            .anyRequest().authenticated()
-                    )
-                    .formLogin(form -> form
-                            .loginPage("/login")
-                            .permitAll()
-                    )
-                    .logout(logout -> logout.permitAll());
-
-            return http.build();
-        }
-
-        @Bean
-        @Primary
-        public org.springframework.web.servlet.ViewResolver viewResolver() {
-            return new org.springframework.web.servlet.view.InternalResourceViewResolver() {
-                @Override
-                public org.springframework.web.servlet.View resolveViewName(String viewName, java.util.Locale locale) {
-                    // 실제 뷰 해석 없이 Mock View 반환
-                    return new org.springframework.web.servlet.view.AbstractView() {
-                        @Override
-                        protected void renderMergedOutputModel(java.util.Map<String, Object> model,
-                                                               jakarta.servlet.http.HttpServletRequest request,
-                                                               jakarta.servlet.http.HttpServletResponse response) {
-                            // 실제 렌더링은 수행하지 않음
-                        }
-                    };
-                }
-            };
-        }
     }
 
     @Test
     @DisplayName("홈페이지 접근 - 비로그인 사용자")
-    @WithAnonymousUser
+//    @WithAnonymousUser
     void home_AnonymousUser() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
@@ -140,7 +105,6 @@ class MainControllerTest {
 
     @Test
     @DisplayName("회원가입 처리 - 성공")
-    @WithAnonymousUser
     void registerUser_Success() throws Exception {
         // Given
         User mockUser = new User();
